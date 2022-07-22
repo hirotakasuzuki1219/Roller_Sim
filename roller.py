@@ -2,18 +2,20 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+from scipy.fftpack import fft, fftfreq
 
 # データのパラメータ
 N = 256            # サンプル数
-wave_number = 10
+wave_number = 5
 Hz_max = 1000
 Hz = Hz_max/2 * np.random.rand(wave_number)
-fc = Hz_max/4  # カットオフ周波数
+fc = Hz_max/5  # カットオフ周波数
 Amp_max = 50
 ampl        = Amp_max * np.random.rand(wave_number) # 0.0 以上 1.0 未満の乱数
 dt = 1/Hz_max          # サンプリング間隔
 t = np.arange(0, N*dt, dt) # 時間軸
 freq = np.linspace(0, 1.0/dt, N) # 周波数軸
+# freq = fftfreq(N, dt)
 
 for i in range(0, wave_number):
     if i==0:
@@ -23,6 +25,7 @@ for i in range(0, wave_number):
 
 # 高速フーリエ変換（周波数信号に変換）
 F = np.fft.fft(f)
+# F = fft(f)
 
 # 正規化 + 交流成分2倍
 F = F/(N/2)
@@ -80,8 +83,18 @@ plt.ylabel('Amplitude', fontsize=12)
 plt.grid()
 leg = plt.legend(loc=1, fontsize=15)
 leg.get_frame().set_alpha(1)
-plt.show()
+# plt.show()
 plt.savefig('wave.png')
+
+# パワースペクトル
+fig = plt.figure(figsize=(10.0, 8.0))
+plt.plot(freq[1:N//2], np.abs(F[1:N//2])**2)
+# plt.plot(freq[1:N//2], F[1:N//2]*F[1:N//2])
+# plt.plot(freq, (F**2))
+plt.xlabel('frequency [Hz]')
+plt.ylabel('Power')
+
+plt.show()
 
 w = np.stack([t, f])
 np.savetxt('python-csv.csv', w.T, delimiter=',')
