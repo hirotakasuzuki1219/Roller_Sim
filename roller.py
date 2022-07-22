@@ -3,111 +3,85 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
-
 # データのパラメータ
 N = 256            # サンプル数
-dt = 0.01          # サンプリング間隔
-f1, f2 = 10, 50    # 周波数
+wave_number = 10
+Hz_max = 1000
+Hz = Hz_max/2 * np.random.rand(wave_number)
+fc = Hz_max/4  # カットオフ周波数
+Amp_max = 50
+ampl        = Amp_max * np.random.rand(wave_number) # 0.0 以上 1.0 未満の乱数
+dt = 1/Hz_max          # サンプリング間隔
 t = np.arange(0, N*dt, dt) # 時間軸
 freq = np.linspace(0, 1.0/dt, N) # 周波数軸
 
-# 信号を生成（周波数10の正弦波+周波数20の正弦波+ランダムノイズ）
-f = np.sin(2*np.pi*f1*t) + np.sin(2*np.pi*f2*t) + 0.3 * np.random.randn(N)
+for i in range(0, wave_number):
+    if i==0:
+        f = ampl[i] *np.sin(2*np.pi*Hz[i]*t)
+    else:
+        f += ampl[i] *np.sin(2*np.pi*Hz[i]*t)
 
-# 高速フーリエ変換
+# 高速フーリエ変換（周波数信号に変換）
 F = np.fft.fft(f)
 
-# 振幅スペクトルを計算
-Amp = np.abs(F)
+# 正規化 + 交流成分2倍
+F = F/(N/2)
+F[0] = F[0]/2
+
+# 配列Fをコピー
+F2 = F.copy()
+
+# ローパスフィル処理（カットオフ周波数を超える帯域の周波数信号を0にする）
+F2[(freq > fc)] = 0
+
+# 高速逆フーリエ変換（時間信号に戻す）
+f2 = np.fft.ifft(F2)
+
+# 振幅を元のスケールに戻す
+f2 = np.real(f2*N)
 
 # グラフ表示
-plt.figure()
-plt.subplot(121)
+fig = plt.figure(figsize=(10.0, 8.0))
+# plt.rcParams['font.family'] = 'Times New Roman'
+plt.rcParams['font.size'] = 12
+
+# 時間信号（元）
+plt.subplot(221)
 plt.plot(t, f, label='f(n)')
-plt.xlabel("Time")
-plt.ylabel("Signal")
+plt.xlabel("Time", fontsize=12)
+plt.ylabel("Signal", fontsize=12)
 plt.grid()
-leg = plt.legend(loc=1)
+leg = plt.legend(loc=1, fontsize=15)
 leg.get_frame().set_alpha(1)
-plt.subplot(122)
-plt.plot(freq, Amp, label='|F(k)|')
-plt.xlabel('Frequency')
-plt.ylabel('Amplitude')
+
+# 周波数信号(元)
+plt.subplot(222)
+plt.plot(freq, np.abs(F), label='|F(k)|')
+plt.xlabel('Frequency', fontsize=12)
+plt.ylabel('Amplitude', fontsize=12)
 plt.grid()
-leg = plt.legend(loc=1)
+leg = plt.legend(loc=1, fontsize=15)
+leg.get_frame().set_alpha(1)
+
+# 時間信号(処理後)
+plt.subplot(223)
+plt.plot(t, f2, label='f2(n)')
+plt.xlabel("Time", fontsize=12)
+plt.ylabel("Signal", fontsize=12)
+plt.grid()
+leg = plt.legend(loc=1, fontsize=15)
+leg.get_frame().set_alpha(1)
+
+# 周波数信号(処理後)
+plt.subplot(224)
+plt.plot(freq, np.abs(F2), label='|F2(k)|')
+plt.xlabel('Frequency', fontsize=12)
+plt.ylabel('Amplitude', fontsize=12)
+plt.grid()
+leg = plt.legend(loc=1, fontsize=15)
 leg.get_frame().set_alpha(1)
 plt.show()
-
-file_name = 'wave.jpg'
-plt.savefig(file_name)
+plt.savefig('wave.png')
 
 w = np.stack([t, f])
 np.savetxt('python-csv.csv', w.T, delimiter=',')
-
-
-
-# import numpy as np
-# import matplotlib.pyplot as plt
-# import math
- 
-# # パラメータ
-# wave_number = 2     # 合成する波形の数
-# dt = 0.01           # サンプリング周期 [sec]
-# # time_max = 50
-# data_number = 256 # データ数
-   
-# ampl        = np.random.rand(wave_number) # 0.0 以上 1.0 未満の乱数
-# # freq        = np.random.rand(wave_number) # 0.0 以上 1.0 未満の乱数
-# freq        = np.linspace(0, 1.0/dt, data_number) # 周波数軸
-# t           = np.linspace(0, data_number*dt, data_number)
-# # t           = np.linspace(0, data_number*dt, dt)
-# # Freq = np.linspace(0, 1.0/dt, data_number) # 周波数軸
-# print(t)
-
-# for i in range(0, wave_number):
-#     if i==0:
-#         f  = ampl[i] * np.sin(2 * np.pi * freq[i] * t)
-#     else:
-#         f += ampl[i] * np.sin(2 * np.pi * freq[i] * t)
-
-# F = np.fft.fft(f)
-# print(F)
-# Amp = np.abs(F)
-# print(Amp)
-# print(len(Amp))
-
-# # plt.rcParams['font.size'] = 17
-
-# # グラフ表示
-# plt.plot(t, f)
-# plt.grid(True)
-# plt.title('Wave')
-# plt.xlabel('time[sec]')
-# plt.ylabel('amplitude')
-
-# # グラフ出力
-# file_name = 'wave.jpg'
-# plt.savefig(file_name)
-
-
-# plt.figure()
-# plt.subplot(121)
-# plt.plot(t, f, label='f(n)')
-# plt.xlabel("Time")
-# plt.ylabel("Signal")
-# plt.grid()
-# leg = plt.legend(loc=1)
-# leg.get_frame().set_alpha(1)
-# plt.subplot(122)
-# # plt.plot(t, Amp, label='|F(k)|')
-# plt.plot(t, Amp, label='|F(k)|')
-# plt.xlabel('Frequency')
-# plt.ylabel('Amplitude')
-# plt.grid()
-# leg = plt.legend(loc=1)
-# leg.get_frame().set_alpha(1)
-
-# plt.show()
-
-# w = np.stack([t, f])
-# np.savetxt('python-csv.csv', w.T, delimiter=',')
