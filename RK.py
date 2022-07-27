@@ -14,12 +14,12 @@ def ka_cal(t,x,v):
     mass_2 = 1
     stiff_1 = 1
     stiff_2 = 1
-    damp_1= 1
-    damp_2 = 1
+    damp_1= 0.0
+    damp_2 = 0.0
 
     frec = 5
     g = 9.81
-    F_amp = 0
+    F_amp = 1000
     
     M = [[mass_1,0],[0,mass_2]]
     K =[[stiff_1, -stiff_1],[-stiff_1, stiff_1+stiff_2]]
@@ -34,32 +34,21 @@ def ka_cal(t,x,v):
 def kv_cal(v):
     return  v
 
-
+t_mat = []
+x_mat_1 = []
+x_mat_2 = []
 t=0
 k=0
 while t<=tmax:
     k1_a = ka_cal(t,x,v)
     k1_v = kv_cal(v)
     k1_v  = np.array(k1_v)
-    # print(type(k1_v))
-    # np.matrix(k1_v)
-    # print(t+dt/2)
-    # print(k1_v)
-    # print(k1_v.dtype)
-    # print(float(k1_v))
-    # print(float(k1_v)*dt)
-    # print(x+k1_v*dt/2)
-    # print(v+k1_a*dt/2)
-    # k1_v*dt/2
-    
     k2_a = ka_cal(t+dt/2, x+k1_v*dt/2, v+k1_a*dt/2)
     k2_v = kv_cal(v)
     k2_v  = np.array(k2_v)
-
     k3_a = ka_cal(t+dt/2, x+k2_v*dt/2, v+k2_a*dt/2)
     k3_v = kv_cal(v)   
     k3_v  = np.array(k3_v)
-
     k4_a = ka_cal(t+dt, x+k3_v*dt, v+k3_a*dt)
     k4_v = kv_cal(v)
     k4_v  = np.array(k4_v)
@@ -67,8 +56,15 @@ while t<=tmax:
     x = x + dt/6 * (k1_v + 2*k2_v + 2*k3_v + k4_v)
     v = v + dt/6 * (k1_a + 2*k2_a + 2*k3_a + k4_a)
 
-    print(x)
-    print(v)
+    t_mat.append(t)
+    x_mat_1.append(x[0])
+    x_mat_2.append(x[1])
     
     t += dt
     k = k + 1
+
+plt.figure()
+plt.plot(t_mat, x_mat_1,label='x1')
+plt.plot(t_mat, x_mat_2,label='x2')
+plt.legend()
+plt.show()
