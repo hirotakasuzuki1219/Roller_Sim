@@ -24,7 +24,12 @@ def ka_cal(t,x,v):
     damp_1= 2 * 0.1 * math.sqrt(mass_1*stiff_1)
     damp_2= 2 * 0.4 * math.sqrt(mass_2*stiff_2)
 
+    x  = np.array(x)
+    v  = np.array(v)
 
+    if stiff_2 * x[1] + damp_2 * v[1] < 0:
+        stiff_2 = 0
+        damp_2 = 0
     
     M = [[mass_1,0],[0,mass_2]]
     K =[[stiff_1, -stiff_1],[-stiff_1, stiff_1+stiff_2]]
@@ -96,6 +101,6 @@ plt.figure()
 plt.plot(freq[0:N//2], np.abs(F[0:N//2])**2)
 plt.xlabel("Freq.")
 plt.ylabel("Amp.")
-plt.xlim(0,100)
+plt.xlim(0,1000)
 
 plt.show()
